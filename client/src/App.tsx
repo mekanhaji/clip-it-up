@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { HomePage, ClipboardRoom } from "./components";
+import { Toaster } from "@/components/ui/toaster";
 
 const App = () => {
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  if (!currentRoom) {
-    return <HomePage onRoomJoin={setCurrentRoom} />;
-  }
-
   return (
-    <ClipboardRoom
-      roomCode={currentRoom}
-      isConnected={isConnected}
-      setIsConnected={setIsConnected}
-      onLeaveRoom={() => setCurrentRoom(null)}
-    />
+    <>
+      {!currentRoom ? (
+        <HomePage onRoomJoin={setCurrentRoom} />
+      ) : (
+        <ClipboardRoom
+          roomCode={currentRoom}
+          isConnected={isConnected}
+          setIsConnected={setIsConnected}
+          onLeaveRoom={() => setCurrentRoom(null)}
+        />
+      )}
+      <Toaster />
+    </>
   );
 };
 
