@@ -3,9 +3,14 @@ import type { ClipboardItem } from "../types";
 interface ClipboardHistoryProps {
   history: ClipboardItem[];
   onCopyItem: (text: string) => Promise<boolean>;
+  onSync?: () => void;
 }
 
-const ClipboardHistory = ({ history, onCopyItem }: ClipboardHistoryProps) => {
+const ClipboardHistory = ({
+  history,
+  onCopyItem,
+  onSync,
+}: ClipboardHistoryProps) => {
   const handleCopyItem = async (item: ClipboardItem) => {
     const success = await onCopyItem(item.contain);
     if (success) {
@@ -16,7 +21,18 @@ const ClipboardHistory = ({ history, onCopyItem }: ClipboardHistoryProps) => {
 
   return (
     <section className="bg-white p-4 rounded-lg shadow">
-      <h2 className="text-xl font-bold mb-4">Clipboard History</h2>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="text-xl font-bold">Clipboard History</h2>
+        {onSync && (
+          <button
+            type="button"
+            onClick={onSync}
+            className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+          >
+            Sync clipboard
+          </button>
+        )}
+      </div>
       {history.length === 0 ? (
         <p className="text-gray-500">
           No history yet. <br />

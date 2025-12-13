@@ -21,10 +21,8 @@ const ClipboardRoom = ({
   setIsConnected,
   onLeaveRoom,
 }: ClipboardRoomProps) => {
-  const { history, copy, messages, shareText, clipboardError } = useClipboard(
-    roomCode,
-    setIsConnected
-  );
+  const { history, copy, getBoard, messages, shareText, clipboardError } =
+    useClipboard(roomCode, setIsConnected);
   const { toast } = useToast();
   const initializedRef = useRef(false);
   const messageCountRef = useRef(0);
@@ -83,7 +81,7 @@ const ClipboardRoom = ({
       <ManualTextShare onShareText={shareText} isConnected={isConnected} />
 
       {/* Clipboard History Section */}
-      <ClipboardHistory history={history} onCopyItem={copy} />
+      <ClipboardHistory history={history} onCopyItem={copy} onSync={getBoard} />
     </main>
   );
 };
