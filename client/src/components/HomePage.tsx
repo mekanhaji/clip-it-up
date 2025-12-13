@@ -36,8 +36,8 @@ const HomePage = ({ onRoomJoin }: HomePageProps) => {
     <main className="min-h-screen flex items-center justify-center bg-[var(--color-background)]">
       <div className="p-8 rounded-lg shadow-lg w-full max-w-md bg-[var(--color-card)] text-[var(--color-card-foreground)]">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[var(--color-foreground)] mb-2">
-            ShareClipBoard
+          <h1 className="text-3xl font-mono font-bold text-[var(--color-foreground)] mb-2">
+            ClipItUp
           </h1>
           <p className="text-[var(--color-muted-foreground)]">
             Share your clipboard across devices
