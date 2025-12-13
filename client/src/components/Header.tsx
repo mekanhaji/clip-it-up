@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <section className="rounded-lg shadow">
-      {!clipboardError && (
+      {!clipboardError && !!clipboardError?.length && (
         <div className="bg-yellow-600 rounded-tr-lg rounded-tl-lg">
           <p className="text-white text-sm mt-1 text-center">
             ⚠️ {clipboardError}
