@@ -13,13 +13,17 @@ const Toaster = () => {
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, ...props }) {
+      {toasts.map(function ({ id, title, description, ...props }) {
         return (
-          <Toast key={id} {...props}>
+          <Toast
+            key={id}
+            title={typeof title === "string" ? title : undefined}
+            {...props}
+          >
             <div className="grid gap-1">
-              {props.title && <ToastTitle>{props.title}</ToastTitle>}
-              {props.description && (
-                <ToastDescription>{props.description}</ToastDescription>
+              {title && <ToastTitle>{title}</ToastTitle>}
+              {description && (
+                <ToastDescription>{description}</ToastDescription>
               )}
             </div>
             {props.action}
