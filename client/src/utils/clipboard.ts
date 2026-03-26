@@ -19,7 +19,7 @@ export const createClipboardItem = async (text: string) => {
     ) {
       const buf = await crypto.subtle.digest(
         "SHA-1",
-        new TextEncoder().encode(text)
+        new TextEncoder().encode(text),
       );
       const hash = Array.from(new Uint8Array(buf))
         .map((b) => b.toString(16).padStart(2, "0"))
@@ -29,7 +29,6 @@ export const createClipboardItem = async (text: string) => {
   } catch (err) {
     // WebCrypto may throw "The operation is insecure." on insecure origins
     // or if the API is restricted. Fall back to a simple hash below.
-    // eslint-disable-next-line no-console
     console.warn("WebCrypto digest failed, falling back to sync hash:", err);
   }
 

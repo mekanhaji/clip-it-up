@@ -127,7 +127,7 @@ const HomePage = () => {
     });
   }, [composerValue, ensureRoomAndSend, entries, toast]);
 
-  const handleLeave = () => {
+  const handleLeave = useCallback(() => {
     setEntries([]);
     setComposerValue("");
     resetToTempRoom();
@@ -135,7 +135,7 @@ const HomePage = () => {
       title: "Temporary room ready",
       description: "A fresh local room is active.",
     });
-  };
+  }, [resetToTempRoom, toast]);
 
   const handleJoinRoom = async (code: string) => {
     setServerRoom(code);
