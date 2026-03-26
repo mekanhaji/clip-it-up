@@ -1,8 +1,11 @@
+import { cn } from "@/lib/utils";
+
 interface ComposerProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   compact?: boolean;
+  className?: string;
 }
 
 export const Composer = ({
@@ -10,15 +13,19 @@ export const Composer = ({
   onChange,
   placeholder = "type or paste something to clip...",
   compact = false,
+  className,
 }: ComposerProps) => {
   return (
-    <div className="w-full">
+    <div className={cn("w-full", className)}>
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="font-mono-ui w-full resize-none border-0 border-b border-[var(--border)] bg-transparent px-0 py-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--foreground)] focus:outline-none"
-        rows={compact ? 2 : 4}
+        className={cn(
+          "font-mono-ui w-full resize-none border-0 border-b border-[var(--border)] bg-transparent px-0 text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--foreground)] focus:outline-none",
+          compact ? "py-2 text-xs" : "py-3 text-sm",
+        )}
+        rows={1}
       />
     </div>
   );

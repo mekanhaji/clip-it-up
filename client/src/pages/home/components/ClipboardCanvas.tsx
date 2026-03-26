@@ -6,16 +6,7 @@ interface ClipboardCanvasProps {
 
 export const ClipboardCanvas = ({ entries }: ClipboardCanvasProps) => {
   if (!entries.length) {
-    return (
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-6 text-center">
-        <h2 className="text-5xl font-light lowercase text-[var(--foreground)] sm:text-7xl">
-          the desk is clear
-        </h2>
-        <p className="font-mono-ui mt-4 text-xs tracking-[0.08em] text-[var(--muted-foreground)]">
-          paste your first clip to synchronize this room.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return (

@@ -9,7 +9,6 @@ import { RoomConfigModal } from "@/pages/home/components/RoomConfigModal";
 import { TopBar } from "@/pages/home/components/TopBar";
 import { useRoomRealtime } from "@/pages/home/hooks/useRoomRealtime";
 import { useRoomSession } from "@/pages/home/hooks/useRoomSession";
-import { cn } from "@/lib/utils";
 import type { ActionDefinition, ClipboardEntry } from "@/pages/home/types";
 
 const HomePage = () => {
@@ -194,24 +193,50 @@ const HomePage = () => {
         onOpenRoomConfig={() => setIsRoomConfigOpen(true)}
       />
 
-      <main className="relative flex min-h-screen flex-col overflow-hidden">
+      <main className="relative flex min-h-screen flex-col overflow-hidden pt-20 sm:pt-24">
         <ClipboardCanvas entries={entries} />
 
+        {!hasClipboardContent && (
+          <section className="mx-auto flex w-full max-w-4xl flex-1 items-center justify-center px-6 pb-16 sm:px-8 sm:pb-20">
+            <div className="w-full max-w-2xl text-center">
+              <h2 className="text-6xl font-light lowercase leading-[0.95] text-[var(--foreground)] sm:text-7xl">
+                the desk is clear
+              </h2>
+              <p className="font-mono-ui mt-6 text-[11px] tracking-[0.08em] text-[var(--muted-foreground)] sm:text-xs">
+                paste your first clip to synchronize this room.
+              </p>
+
+              <Composer
+                value={composerValue}
+                onChange={setComposerValue}
+                className="mx-auto mt-14 max-w-xl"
+              />
+
+              <ActionRow actions={actions} className="mt-8" />
+            </div>
+          </section>
+        )}
+
         <section
-          className={cn(
-            "w-full px-6 pb-10 pt-4 transition-all duration-500 sm:px-8",
-            hasClipboardContent
-              ? "fixed bottom-0 left-0 z-20 translate-y-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/95 to-transparent"
-              : "pointer-events-auto absolute left-1/2 top-1/2 z-20 w-full max-w-3xl -translate-x-1/2 -translate-y-1/2",
-          )}
+          className={
+            "pointer-events-none fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/96 to-transparent"
+          }
         >
-          <div className="mx-auto w-full max-w-2xl space-y-6">
-            <Composer
-              value={composerValue}
-              onChange={setComposerValue}
-              compact={hasClipboardContent}
-            />
-            <ActionRow actions={actions} />
+          <div
+            className={
+              hasClipboardContent
+                ? "pointer-events-auto mx-auto w-full max-w-3xl translate-y-0 px-6 pb-8 opacity-100 transition-all duration-500 sm:px-8"
+                : "mx-auto w-full max-w-3xl translate-y-10 px-6 pb-8 opacity-0 transition-all duration-500 sm:px-8"
+            }
+          >
+            <div className="space-y-4">
+              <Composer
+                value={composerValue}
+                onChange={setComposerValue}
+                compact={true}
+              />
+              <ActionRow actions={actions} compact={true} />
+            </div>
           </div>
         </section>
       </main>
