@@ -5,12 +5,15 @@ import { Composer } from "@/pages/home/components/Composer";
 import { TopBar } from "@/pages/home/components/TopBar";
 import type { ActionDefinition } from "@/pages/home/types";
 import { useClipboardStore } from "@/store/clipboard";
+import { useRoomStore, useSocketStore } from "@/store/room";
 import { useMemo, useState } from "react";
 
 const HomePage = () => {
   const { toast } = useToast();
   const [composerValue, setComposerValue] = useState("");
-  const { entries, addEntry } = useClipboardStore();
+  const { entries, addEntry, clearEntries } = useClipboardStore();
+  const { socket } = useSocketStore();
+  const { code, leaveRoom } = useRoomStore();
 
   const hasClipboardContent = entries.length > 0;
 
@@ -35,16 +38,24 @@ const HomePage = () => {
         key: "leave",
         label: "leave",
         variant: "secondary",
-        onClick: () => {},
+        onClick: () => {
+          socket?.close();
+          leaveRoom();
+          toast({
+            title: "Left room",
+            description: `You have left room ${code}.`,
+          });
+        },
       },
       {
-        key: "more",
-        label: "more",
+        key: "clear",
+        label: "clear",
         variant: "ghost",
         onClick: () => {
+          clearEntries();
           toast({
-            title: "Placeholder",
-            description: "Future action slot is ready.",
+            title: "Clipboard cleared",
+            description: "All items have been removed.",
           });
         },
       },

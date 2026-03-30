@@ -10,6 +10,8 @@ export interface Room {
   updateRoomCode: (code: string) => void;
   //   update the room status
   updateStatus: (status: "connected" | "connecting" | "disconnected") => void;
+  //  leaveRoom clears the room code and sets status to `disconnected`
+  leaveRoom: () => void;
 }
 
 export const useRoomStore = create<Room>((set) => ({
@@ -17,6 +19,9 @@ export const useRoomStore = create<Room>((set) => ({
   status: "disconnected",
   updateRoomCode: (code) => set({ code, status: "connected" }),
   updateStatus: (status) => set({ status }),
+  leaveRoom: () => {
+    set({ code: null, status: "disconnected" });
+  },
 }));
 
 export interface SocketStore {
