@@ -1,157 +1,17 @@
-import { useCallback, useMemo, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { createClipboardItem, fallbackCopy } from "@/utils/clipboard";
-import { createRoom } from "@/pages/home/api/rooms";
 import { ActionRow } from "@/pages/home/components/ActionRow";
 import { ClipboardCanvas } from "@/pages/home/components/ClipboardCanvas";
 import { Composer } from "@/pages/home/components/Composer";
-import { RoomConfigModal } from "@/pages/home/components/RoomConfigModal";
 import { TopBar } from "@/pages/home/components/TopBar";
-import { useRoomRealtime } from "@/pages/home/hooks/useRoomRealtime";
-import { useRoomSession } from "@/pages/home/hooks/useRoomSession";
 import type { ActionDefinition, ClipboardEntry } from "@/pages/home/types";
+import { useMemo, useState } from "react";
 
 const HomePage = () => {
   const { toast } = useToast();
   const [composerValue, setComposerValue] = useState("");
   const [entries, setEntries] = useState<ClipboardEntry[]>([]);
-  const [isRoomConfigOpen, setIsRoomConfigOpen] = useState(false);
-
-  const {
-    roomCode,
-    roomMode,
-    ensureServerRoom,
-    resetToTempRoom,
-    setServerRoom,
-  } = useRoomSession();
-
-  const addEntry = useCallback(
-    async (content: string, source: "local" | "remote") => {
-      const value = content.trim();
-      if (!value) {
-        return;
-      }
-
-      const item = await createClipboardItem(value);
-      setEntries((prev) => {
-        if (prev.some((entry) => entry.id === item.hash)) {
-          return prev;
-        }
-
-        return [
-          {
-            id: item.hash,
-            content: value,
-            source,
-            createdAt: Date.now(),
-          },
-          ...prev,
-        ];
-      });
-    },
-    [],
-  );
-
-  const { connectionState, sendClipboardMessage } = useRoomRealtime({
-    roomCode,
-    enabled: roomMode === "server",
-    onClipboardMessage: (content) => {
-      void addEntry(content, "remote");
-    },
-  });
 
   const hasClipboardContent = entries.length > 0;
-
-  const ensureRoomAndSend = useCallback(
-    async (text: string) => {
-      const value = text.trim();
-      if (!value) {
-        return;
-      }
-
-      try {
-        const resolvedRoomCode = await ensureServerRoom();
-        await addEntry(value, "local");
-        sendClipboardMessage(value);
-
-        toast({
-          title: "Synced",
-          description: `Clip shared to room ${resolvedRoomCode}.`,
-        });
-      } catch (err) {
-        toast({
-          title: "Sync failed",
-          description: err instanceof Error ? err.message : "Unable to sync.",
-          variant: "destructive",
-        });
-      }
-    },
-    [addEntry, ensureServerRoom, sendClipboardMessage, toast],
-  );
-
-  const handleSync = useCallback(async () => {
-    const draft = composerValue.trim();
-    if (draft) {
-      await ensureRoomAndSend(draft);
-      setComposerValue("");
-      return;
-    }
-
-    try {
-      const clipboardText = await navigator.clipboard?.readText();
-      if (clipboardText?.trim()) {
-        await ensureRoomAndSend(clipboardText);
-        return;
-      }
-    } catch {
-      // Fallback behavior below handles environments without clipboard access.
-    }
-
-    if (entries.length) {
-      const latest = entries[0];
-      const copied = await fallbackCopy(latest.content);
-      toast({
-        title: copied ? "Copied latest clip" : "Copy failed",
-        description: copied
-          ? "Latest room content copied to clipboard."
-          : "Could not copy to clipboard.",
-        variant: copied ? "default" : "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Nothing to sync",
-      description: "Paste or type content first.",
-    });
-  }, [composerValue, ensureRoomAndSend, entries, toast]);
-
-  const handleLeave = useCallback(() => {
-    setEntries([]);
-    setComposerValue("");
-    resetToTempRoom();
-    toast({
-      title: "Temporary room ready",
-      description: "A fresh local room is active.",
-    });
-  }, [resetToTempRoom, toast]);
-
-  const handleJoinRoom = async (code: string) => {
-    setServerRoom(code);
-    toast({
-      title: "Joined room",
-      description: `Connected to room ${code}.`,
-    });
-  };
-
-  const handleCreateRoom = async () => {
-    const nextCode = await createRoom();
-    setServerRoom(nextCode);
-    toast({
-      title: "Room created",
-      description: `Switched to room ${nextCode}.`,
-    });
-  };
 
   const actions: ActionDefinition[] = useMemo(
     () => [
@@ -159,15 +19,13 @@ const HomePage = () => {
         key: "sync",
         label: "sync",
         variant: "primary",
-        onClick: () => {
-          void handleSync();
-        },
+        onClick: () => {},
       },
       {
         key: "leave",
         label: "leave",
         variant: "secondary",
-        onClick: handleLeave,
+        onClick: () => {},
       },
       {
         key: "more",
@@ -181,17 +39,12 @@ const HomePage = () => {
         },
       },
     ],
-    [handleLeave, handleSync, toast],
+    [toast],
   );
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <TopBar
-        roomCode={roomCode}
-        roomMode={roomMode}
-        connectionState={connectionState}
-        onOpenRoomConfig={() => setIsRoomConfigOpen(true)}
-      />
+      <TopBar />
 
       <main className="relative flex min-h-screen flex-col overflow-hidden pt-20 sm:pt-24">
         <ClipboardCanvas entries={entries} />
@@ -240,14 +93,6 @@ const HomePage = () => {
           </div>
         </section>
       </main>
-
-      <RoomConfigModal
-        open={isRoomConfigOpen}
-        roomCode={roomCode}
-        onClose={() => setIsRoomConfigOpen(false)}
-        onJoinRoom={handleJoinRoom}
-        onCreateRoom={handleCreateRoom}
-      />
     </div>
   );
 };

@@ -1,68 +1,69 @@
+import { toast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
+import { useRoomStore, useSocketStore } from "@/store/room";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { createRoom } from "../api/rooms";
+import { createRoomSocket } from "../api/ws";
 
 interface RoomConfigModalProps {
   open: boolean;
-  roomCode: string;
   onClose: () => void;
-  onJoinRoom: (roomCode: string) => Promise<void>;
-  onCreateRoom: () => Promise<void>;
 }
 
-export const RoomConfigModal = ({
-  open,
-  roomCode,
-  onClose,
-  onJoinRoom,
-  onCreateRoom,
-}: RoomConfigModalProps) => {
-  const [joinCode, setJoinCode] = useState("");
-  const [error, setError] = useState("");
-  const [isBusy, setIsBusy] = useState(false);
+export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
+  const { code, status, updateRoomCode, updateStatus } = useRoomStore();
+  const { setSocket } = useSocketStore();
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) {
-      setJoinCode("");
-      setError("");
-      setIsBusy(false);
-    }
-  }, [open]);
-
-  if (!open) {
-    return null;
-  }
-
-  const handleJoin = async () => {
-    if (joinCode.length !== 6) {
-      setError("Room code must be 6 characters.");
-      return;
-    }
-
-    setError("");
-    setIsBusy(true);
-    try {
-      await onJoinRoom(joinCode.toUpperCase());
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to join room.");
-    } finally {
-      setIsBusy(false);
-    }
+  const _preCall = () => {
+    setIsPending(true);
+    updateStatus("connecting");
+    setError(null);
+    toast({
+      title: "Joining room...",
+      variant: "default",
+      description: `Attempting to join room ${code}...`,
+    });
   };
 
-  const handleCreate = async () => {
-    setError("");
-    setIsBusy(true);
-    try {
-      await onCreateRoom();
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to create room.");
-    } finally {
-      setIsBusy(false);
-    }
+  const _postCall = (roomCode: string) => {
+    toast({
+      title: "Joined room",
+      variant: "default",
+      description: `Successfully joined room ${roomCode}!`,
+    });
+    updateRoomCode(roomCode);
+    setIsPending(false);
+    onClose();
   };
 
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    _preCall();
+
+    const formData = new FormData(e.currentTarget);
+    const newCode = formData.get("code") as string;
+
+    const socket = createRoomSocket(newCode);
+    setSocket(socket);
+
+    _postCall(newCode);
+  };
+
+  const handleCreateRoom = async () => {
+    _preCall();
+
+    const roomCode = await createRoom();
+    const socket = createRoomSocket(roomCode);
+    setSocket(socket);
+
+    _postCall(roomCode);
+  };
+
+  if (!open) return null;
+  // TODO: use shadcn dialog
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4">
       <div className="w-full max-w-md rounded border border-[var(--border)] bg-[var(--background)] p-5 shadow-xl sm:p-6">
@@ -70,9 +71,20 @@ export const RoomConfigModal = ({
           <div>
             <h2 className="text-2xl font-light lowercase">room config</h2>
             <p className="font-mono-ui mt-2 text-xs tracking-[0.08em] text-[var(--muted-foreground)]">
-              current: {roomCode}
+              <span
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  status === "connected"
+                    ? "bg-emerald-500"
+                    : status === "connecting"
+                      ? "bg-amber-500"
+                      : "bg-[var(--muted-foreground)]",
+                )}
+              />
+              {status}
             </p>
           </div>
+
           <button
             type="button"
             onClick={onClose}
@@ -88,27 +100,21 @@ export const RoomConfigModal = ({
             <p className="font-mono-ui text-[10px] uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
               join existing room
             </p>
-            <input
-              type="text"
-              value={joinCode}
-              onChange={(event) => {
-                const value = event.target.value
-                  .toUpperCase()
-                  .replace(/[^A-Z]/g, "")
-                  .slice(0, 6);
-                setJoinCode(value);
-              }}
-              placeholder="room code"
-              className="font-mono-ui w-full rounded border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-center text-lg tracking-[0.18em] focus:border-[var(--foreground)] focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={handleJoin}
-              disabled={isBusy}
-              className="w-full rounded border border-[var(--border)] px-3 py-2.5 font-mono-ui text-xs tracking-[0.08em] transition-colors hover:bg-[var(--secondary)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Join room
-            </button>
+            <form onSubmit={onSubmit}>
+              <input
+                type="text"
+                name="code"
+                placeholder="room code"
+                className="font-mono-ui w-full rounded border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-center text-lg tracking-[0.18em] focus:border-[var(--foreground)] focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full rounded border border-[var(--border)] px-3 py-2.5 font-mono-ui text-xs tracking-[0.08em] transition-colors hover:bg-[var(--secondary)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Join room
+              </button>
+            </form>
           </div>
 
           <div className="flex items-center gap-3">
@@ -121,8 +127,8 @@ export const RoomConfigModal = ({
 
           <button
             type="button"
-            onClick={handleCreate}
-            disabled={isBusy}
+            onClick={handleCreateRoom}
+            disabled={isPending}
             className="w-full rounded border border-[var(--foreground)] bg-[var(--foreground)] px-3 py-2.5 font-mono-ui text-xs tracking-[0.08em] text-[var(--background)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Create new room
