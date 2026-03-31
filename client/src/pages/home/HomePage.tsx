@@ -77,7 +77,7 @@ const HomePage = () => {
         },
       },
     ],
-    [toast],
+    [toast, composerValue, addEntry, clearEntries, leaveRoom, code, socket],
   );
 
   return (

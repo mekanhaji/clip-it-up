@@ -1,17 +1,9 @@
-import { Settings2, Share2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { ConnectionState, RoomMode } from "@/pages/home/types";
-import { RoomConfigModal } from "./RoomConfigModal";
-import { useState } from "react";
-import { useRoomStore } from "@/store/room";
 import { toast } from "@/components/ui/use-toast";
-
-interface TopBarProps {
-  roomCode: string;
-  roomMode: RoomMode;
-  connectionState: ConnectionState;
-  onOpenRoomConfig: () => void;
-}
+import { cn } from "@/lib/utils";
+import { useRoomStore } from "@/store/room";
+import { Settings2, Share2 } from "lucide-react";
+import { useState } from "react";
+import { RoomConfigModal } from "./RoomConfigModal";
 
 const RoomStatusButton = () => {
   const [openRoomConfig, setOpenRoomConfig] = useState(false);
