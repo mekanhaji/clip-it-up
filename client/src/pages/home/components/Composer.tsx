@@ -38,6 +38,7 @@ export const Composer = ({
       source: "local",
       createdAt: Date.now(),
     });
+
     socket && emitClipboardMessage(socket, code as string, board.trim());
   };
   // TODO: use textarea with form submit on ctrl+enter

@@ -6,7 +6,8 @@ import { TopBar } from "@/pages/home/components/TopBar";
 import type { ActionDefinition } from "@/pages/home/types";
 import { useClipboardStore } from "@/store/clipboard";
 import { useRoomStore, useSocketStore } from "@/store/room";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { subscribeClipboardEvents } from "./api/ws";
 
 const HomePage = () => {
   const { toast } = useToast();
@@ -16,6 +17,22 @@ const HomePage = () => {
   const { code, leaveRoom } = useRoomStore();
 
   const hasClipboardContent = entries.length > 0;
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    const unsubscribe = subscribeClipboardEvents(socket, (content) => {
+      addEntry({
+        id: crypto.randomUUID(),
+        content,
+        source: "remote",
+        createdAt: Date.now(),
+      });
+    });
+
+    return unsubscribe;
+  }, [socket, addEntry]);
 
   const actions: ActionDefinition[] = useMemo(
     () => [
