@@ -11,6 +11,7 @@ export interface ClipboardEntry {
   content: string;
   source: "local" | "remote";
   createdAt: number;
+  pinned?: boolean;
 }
 
 export interface WireMessage {

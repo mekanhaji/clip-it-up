@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 import { useClipboardStore } from "@/store/clipboard";
 import { useRoomStore, useSocketStore } from "@/store/room";
 import { emitClipboardMessage } from "../api/ws";
@@ -22,42 +23,34 @@ export const Composer = ({
   const { addEntry } = useClipboardStore();
   const { code } = useRoomStore();
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = () => {
     onChange(value.trim());
-    const formData = new FormData(event.currentTarget);
-    const board = formData.get("board") as string;
 
-    if (!board.trim()) {
+    if (!value.trim()) {
       return;
     }
 
     addEntry({
       id: crypto.randomUUID(),
-      content: board.trim(),
+      content: value.trim(),
       source: "local",
       createdAt: Date.now(),
     });
     if (socket && code) {
-      emitClipboardMessage(socket, code, board.trim());
+      emitClipboardMessage(socket, code, value.trim());
     }
+    onChange("");
   };
-  // TODO: use textarea with form submit on ctrl+enter
+
   return (
     <div className={cn("w-full", className)}>
-      <form onSubmit={onSubmit}>
-        <input
-          value={value}
-          name="board"
-          onChange={(event) => onChange(event.target.value)}
-          placeholder={placeholder}
-          className={cn(
-            "font-mono-ui w-full resize-none border-0 border-b border-[var(--border)] bg-transparent px-0 text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--foreground)] focus:outline-none",
-            compact ? "py-2 text-xs" : "py-3 text-sm",
-          )}
-          // rows={1}
-        />
-      </form>
+      <Textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onSubmit={handleSubmit}
+        placeholder={placeholder}
+        compact={compact}
+      />
     </div>
   );
 };
