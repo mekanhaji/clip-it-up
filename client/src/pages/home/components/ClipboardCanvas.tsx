@@ -141,17 +141,19 @@ export const ClipboardCanvas = ({ entries }: ClipboardCanvasProps) => {
   };
 
   return (
-    <section className="mx-auto w-full max-w-4xl flex-1 px-6 pb-52 pt-28 sm:px-8">
-      <div className="flex flex-wrap items-start gap-4 md:gap-6">
-        {orderedEntries.map((entry) => (
-          <ClipCanvas
-            key={entry.id}
-            entry={entry}
-            onCopy={handleCopy}
-            onDelete={handleDelete}
-            onPin={handlePin}
-          />
-        ))}
+    <section className="mx-auto w-full max-w-4xl px-6 pb-4 pt-28 sm:px-8">
+      <div className="max-h-[calc(100vh-22rem)] overflow-y-auto overscroll-contain pr-1">
+        <div className="flex flex-wrap items-start gap-4 md:gap-6">
+          {orderedEntries.map((entry) => (
+            <ClipCanvas
+              key={entry.id}
+              entry={entry}
+              onCopy={handleCopy}
+              onDelete={handleDelete}
+              onPin={handlePin}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
