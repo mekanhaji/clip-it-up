@@ -1,82 +1,90 @@
-# 📋 Share Clipboard
+<p align="center">
+  <img
+    src="https://res.cloudinary.com/dtzh7uewv/image/upload/v1779807649/clipitup%40kanhaji.png"
+    alt="ClipItUp - Instant Clipboard Sharing"
+    />
+</p>
 
-Welcome to **Share Clipboard** - your seamless solution for sharing clipboard content across devices and platforms! 🚀
+# ClipItUp : Share Clipboard
 
-## 🌟 Introduction
+> Lightweight clipboard sharing web app (react + Go server) for quickly syncing clipboard contents between devices.
 
-Share Clipboard is a modern, cross-platform application that enables you to effortlessly share clipboard content between different devices. Whether you're working across multiple computers, sharing quick snippets with teammates, or simply need to transfer text/data between devices, Share Clipboard has got you covered!
+Why this project
 
-Built with a powerful combination of **TypeScript** for the frontend, **Go** for the backend, and modern web technologies, this application provides a fast, secure, and user-friendly clipboard sharing experience. ✨
+- Fast, minimal UI for copying/pasting across devices
+- Real-time updates using WebSockets
+- Simple self-hosted stack you can run locally or deploy
 
-## 🎯 Features
+Key features
 
-### 🔥 Core Features
+- Real-time clipboard sync between connected clients
+- Web UI for browsing recent clipboard items
+- Small Go backend and React + Vite frontend
 
-- **📱 Cross-Platform Support** - Works seamlessly across Windows, macOS, and Linux
-- **⚡ Real-time Sync** - Instant clipboard synchronization between connected devices
-- **🌐 Web Interface** - Easy-to-use web dashboard for managing shared content
-- **📊 History Tracking** - Keep track of your recent clipboard items
-- **🎨 Modern UI** - Clean and intuitive user interface built with modern CSS
+Tech stack
 
-## 🚀 Setup
+- Frontend: React, Vite, TypeScript, Tailwind CSS
+- Backend: Go (WebSocket-based)
 
-### 📋 Prerequisites
+Getting started : development
 
-- **Bun** (v1.2.19 or higher) for the frontend
-- **Go** (v1.19 or higher) for the backend
-- **Git** for version control
+Prerequisites
 
-### 🔧 Installation Steps
+- Node.js (16+), npm or yarn
+- Go (1.20+)
 
-1. **Clone the repository** 📥
-   ```bash
-   git clone https://github.com/mekanhaji/share-clipboard.git
-   cd share-clipboard
-   ```
-2. **Backend Setup** ⚙️
+Run the backend
+
+1. Open a terminal and change to the server folder:
 
 ```bash
-# Navigate to backend directory (if applicable)
-cd backend
+cd server
+```
 
-# Install Go dependencies
+2. Fetch dependencies and run the server:
+
+```bash
 go mod download
-
-# Run the Go server
 go run main.go
 ```
 
-3. **Frontend Setup** 🎨
+Run the frontend
+
+1. In a separate terminal change to the client folder:
 
 ```bash
-# Navigate to frontend directory (if applicable)
 cd client
-
-# Install Node.js dependencies
-bun install
-
-# Start the development server
-bun run dev
 ```
 
-4. **Access the Application** 🌍
+2. Install dependencies and start the dev server:
 
-Open your browser and navigate to http://localhost:3000 (or the port specified)
-Start sharing your clipboard content! 🎉
+```bash
+# use npm or yarn
+npm install
+npm run dev
+```
 
-## 🤝 Contributing
+3. Open the URL printed by Vite (usually http://localhost:5173) in your browser.
 
-We welcome contributions! Feel free to:
+Build & deploy
 
-- 🐛 Report bugs
-- 💡 Suggest new features
-- 🔧 Submit pull requests
-- 📖 Improve documentation
+- Build frontend: `cd client && npm run build`
+- Build backend: `cd server && go build -o clipitup`
 
-## 🙏 Acknowledgments
+Project layout
 
-Built with ❤️ by mekanhaji(Jha Kanhaiya)
+- `client/` -> React + Vite frontend
+- `server/` -> Go backend (WebSocket server)
+- `tmp/` -> temporary files
 
----
+Contributing
 
-Happy Clipboard Sharing! 📋✨
+- Bug reports, feature requests and PRs are welcome. Please open issues with clear reproduction steps.
+
+License
+
+- This project is provided under the MIT License.
+
+Acknowledgements
+
+- Built by mekanhaji 👷🏻‍♂️ thanks to the open-source ecosystem for libraries and tooling used here.
