@@ -5,7 +5,7 @@
     />
 </p>
 
-# Clip It Up — Share Clipboard
+# ClipItUp : Share Clipboard
 
 > Lightweight clipboard sharing web app (react + Go server) for quickly syncing clipboard contents between devices.
 
@@ -26,7 +26,7 @@ Tech stack
 - Frontend: React, Vite, TypeScript, Tailwind CSS
 - Backend: Go (WebSocket-based)
 
-Getting started — development
+Getting started : development
 
 Prerequisites
 
@@ -73,9 +73,9 @@ Build & deploy
 
 Project layout
 
-- `client/` — React + Vite frontend
-- `server/` — Go backend (WebSocket server)
-- `tmp/` — temporary files
+- `client/` -> React + Vite frontend
+- `server/` -> Go backend (WebSocket server)
+- `tmp/` -> temporary files
 
 Contributing
 
@@ -87,4 +87,4 @@ License
 
 Acknowledgements
 
-- Built by mekanhaji — thanks to the open-source ecosystem for libraries and tooling used here.
+- Built by mekanhaji 👷🏻‍♂️ thanks to the open-source ecosystem for libraries and tooling used here.
