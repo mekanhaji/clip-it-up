@@ -113,7 +113,10 @@ export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
             <p className="font-mono-ui text-[10px] uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
               join existing room
             </p>
-            <form onSubmit={onSubmit}>
+            <form
+              onSubmit={onSubmit}
+              className="flex flex-col items-center gap-3"
+            >
               <input
                 type="text"
                 name="code"
