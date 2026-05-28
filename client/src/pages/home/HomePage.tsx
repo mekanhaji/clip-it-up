@@ -17,6 +17,36 @@ const HomePage = () => {
   const { code, leaveRoom } = useRoomStore();
 
   const hasClipboardContent = entries.length > 0;
+
+  const pinInputToBoard = () => {
+    addEntry({
+      id: crypto.randomUUID(),
+      content: composerValue.trim(),
+      source: "local",
+      createdAt: Date.now(),
+    });
+    setComposerValue("");
+  };
+
+  const syncClipboard = () => {
+    navigator.clipboard.readText().then((text) => {
+      if (text.trim().length === 0) {
+        toast({
+          title: "Clipboard is empty",
+          description: "Please copy something to your clipboard first.",
+        });
+        return;
+      }
+
+      addEntry({
+        id: crypto.randomUUID(),
+        content: text.trim(),
+        source: "local",
+        createdAt: Date.now(),
+      });
+    });
+  };
+
   useEffect(() => {
     if (!socket) {
       return;
@@ -38,17 +68,14 @@ const HomePage = () => {
     () => [
       {
         key: "sync",
-        label: "sync",
+        label: composerValue.trim().length > 0 ? "pin" : "sync",
         variant: "primary",
         onClick: () => {
-          if (!composerValue.trim()) {
-            addEntry({
-              id: crypto.randomUUID(),
-              content: composerValue.trim(),
-              source: "local",
-              createdAt: Date.now(),
-            });
+          if (composerValue.trim().length > 0) {
+            pinInputToBoard();
+            return;
           }
+          syncClipboard();
         },
       },
       {
@@ -77,7 +104,15 @@ const HomePage = () => {
         },
       },
     ],
-    [toast, composerValue, addEntry, clearEntries, leaveRoom, code, socket],
+    [
+      composerValue,
+      pinInputToBoard,
+      syncClipboard,
+      clearEntries,
+      leaveRoom,
+      code,
+      socket,
+    ],
   );
 
   return (
