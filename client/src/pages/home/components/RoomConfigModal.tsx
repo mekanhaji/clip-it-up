@@ -41,10 +41,23 @@ export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    _preCall();
 
     const formData = new FormData(e.currentTarget);
-    const newCode = formData.get("code") as string;
+    const newCode = formData.get("code")?.toString().trim().toUpperCase();
+
+    if (!newCode) {
+      setError("Room code is required");
+      setIsPending(false);
+      return;
+    }
+
+    if (newCode.length !== 6) {
+      setError("Room code can only be 6 characters long");
+      setIsPending(false);
+      return;
+    }
+
+    _preCall();
 
     const socket = createRoomSocket(newCode);
     setSocket(socket);
@@ -105,7 +118,7 @@ export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
                 type="text"
                 name="code"
                 placeholder="room code"
-                className="font-mono-ui w-full rounded border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-center text-lg tracking-[0.18em] focus:border-[var(--foreground)] focus:outline-none"
+                className="font-mono-ui w-full rounded border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-center text-lg tracking-[0.18em] focus:border-[var(--foreground)] focus:outline-none uppercase"
               />
               <button
                 type="submit"
