@@ -12,19 +12,22 @@ interface RoomConfigModalProps {
 }
 
 export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
-  const { code, status, updateRoomCode, updateStatus } = useRoomStore();
+  const { status, updateRoomCode, updateStatus } = useRoomStore();
   const { setSocket } = useSocketStore();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const _preCall = () => {
+  const _preCall = (roomCode: string | null) => {
     setIsPending(true);
     updateStatus("connecting");
     setError(null);
+    const message = roomCode
+      ? `Attempting to join room ${roomCode}...`
+      : "Attempting to join new room...";
     toast({
       title: "Joining room...",
       variant: "default",
-      description: `Attempting to join room ${code}...`,
+      description: message,
     });
   };
 
@@ -57,7 +60,7 @@ export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
       return;
     }
 
-    _preCall();
+    _preCall(newCode);
 
     const socket = createRoomSocket(newCode);
     setSocket(socket);
@@ -66,7 +69,7 @@ export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
   };
 
   const handleCreateRoom = async () => {
-    _preCall();
+    _preCall(null);
 
     const roomCode = await createRoom();
     const socket = createRoomSocket(roomCode);
