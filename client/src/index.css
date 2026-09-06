@@ -42,6 +42,7 @@
 }
 
 :root {
+  color-scheme: light;
   --radius: 0.25rem;
   --background: #f7f6f3;
   --foreground: #1a1916;
@@ -81,6 +82,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #141311;
   --foreground: #f7f6f3;
   --card: #1d1c19;
@@ -135,6 +137,12 @@
       linear-gradient(180deg, #f7f6f3 0%, #f0ede8 100%);
   }
 
+  .dark body {
+    background-image:
+      radial-gradient(circle at top, #ffffff0d, transparent 48%),
+      linear-gradient(180deg, #141311 0%, #1d1c19 100%);
+  }
+
   h1,
   h2,
   h3 {
@@ -142,8 +150,8 @@
   }
 
   ::selection {
-    background: #1a1916;
-    color: #f7f6f3;
+    background: var(--foreground);
+    color: var(--background);
   }
 }
 

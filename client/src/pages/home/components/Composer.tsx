@@ -1,5 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useSettingsStore } from "@/store/settings";
 
 interface ComposerProps {
   value: string;
@@ -18,12 +19,15 @@ export const Composer = ({
   compact = false,
   className,
 }: ComposerProps) => {
+  const enterToSend = useSettingsStore((state) => state.enterToSend);
+
   return (
     <div className={cn("w-full", className)}>
       <Textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onSubmit={onSubmit}
+        submitOnEnter={enterToSend}
         placeholder={placeholder}
         compact={compact}
         rows={1}
@@ -31,7 +35,9 @@ export const Composer = ({
       />
 
       <p className="font-mono-ui mt-2 hidden text-[10px] lowercase tracking-[0.08em] text-[var(--muted-foreground)] sm:block">
-        cmd / ctrl + enter to send
+        {enterToSend
+          ? "enter to send · shift + enter for a new line"
+          : "cmd / ctrl + enter to send"}
       </p>
     </div>
   );

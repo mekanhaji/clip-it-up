@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { useRoomStore } from "@/store/room";
 import { Settings2, Share2 } from "lucide-react";
@@ -64,8 +65,10 @@ export const TopBar = () => {
         </button>
         <button
           type="button"
+          onClick={() => navigate("settings")}
           className="rounded p-2 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--secondary)]"
-          aria-label="Room settings"
+          aria-label="Settings"
+          title="settings"
         >
           <Settings2 className="h-[15px] w-[15px]" />
         </button>

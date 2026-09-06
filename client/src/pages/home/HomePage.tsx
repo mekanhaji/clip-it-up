@@ -7,23 +7,25 @@ import type { ActionDefinition } from "@/pages/home/types";
 import { createId } from "@/utils/clipboard";
 import { useClipboardStore } from "@/store/clipboard";
 import { useRoomStore, useSocketStore } from "@/store/room";
-import { useEffect, useMemo, useState } from "react";
-import { emitClipboardMessage, subscribeClipboardEvents } from "./api/ws";
-import { useRoomUrlSync } from "./hooks/useRoomUrlSync";
+import { useSettingsStore } from "@/store/settings";
+import { useCallback, useMemo, useState } from "react";
+import { emitClipboardMessage } from "./api/ws";
 
+// Incoming clips and URL <-> room syncing live in App so they keep working
+// while the settings page is open.
 const HomePage = () => {
   const { toast } = useToast();
   const [composerValue, setComposerValue] = useState("");
   const { entries, addEntry, clearEntries } = useClipboardStore();
   const { socket } = useSocketStore();
   const { code, leaveRoom } = useRoomStore();
-
-  useRoomUrlSync();
+  const deviceName = useSettingsStore((state) => state.deviceName);
+  const clearOnLeave = useSettingsStore((state) => state.clearOnLeave);
 
   const hasClipboardContent = entries.length > 0;
   const hasComposerText = composerValue.trim().length > 0;
 
-  const sendClip = () => {
+  const sendClip = useCallback(() => {
     const content = composerValue.trim();
 
     if (!content) {
@@ -37,12 +39,12 @@ const HomePage = () => {
       createdAt: Date.now(),
     });
     if (socket && code) {
-      emitClipboardMessage(socket, code, content);
+      emitClipboardMessage(socket, code, content, deviceName);
     }
     setComposerValue("");
-  };
+  }, [composerValue, addEntry, socket, code, deviceName]);
 
-  const syncClipboard = () => {
+  const syncClipboard = useCallback(() => {
     navigator.clipboard.readText().then((text) => {
       if (text.trim().length === 0) {
         toast({
@@ -59,24 +61,7 @@ const HomePage = () => {
         createdAt: Date.now(),
       });
     });
-  };
-
-  useEffect(() => {
-    if (!socket) {
-      return;
-    }
-
-    const unsubscribe = subscribeClipboardEvents(socket, (content) => {
-      addEntry({
-        id: createId(),
-        content,
-        source: "remote",
-        createdAt: Date.now(),
-      });
-    });
-
-    return unsubscribe;
-  }, [socket, addEntry]);
+  }, [addEntry, toast]);
 
   const actions: ActionDefinition[] = useMemo(
     () => [
@@ -99,9 +84,14 @@ const HomePage = () => {
         onClick: () => {
           socket?.close();
           leaveRoom();
+          if (clearOnLeave) {
+            clearEntries();
+          }
           toast({
             title: "Left room",
-            description: `You have left room ${code}.`,
+            description: clearOnLeave
+              ? `You have left room ${code} and the board was cleared.`
+              : `You have left room ${code}.`,
           });
         },
       },
@@ -123,9 +113,11 @@ const HomePage = () => {
       sendClip,
       syncClipboard,
       clearEntries,
+      clearOnLeave,
       leaveRoom,
       code,
       socket,
+      toast,
     ],
   );
 

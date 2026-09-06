@@ -6,13 +6,16 @@ export const Textarea = (
     compact?: boolean;
     // Grows with its content instead of scrolling inside a fixed height
     autoGrow?: boolean;
-    // Called when Ctrl+Enter or Cmd+Enter is pressed
+    // Plain Enter submits too; Shift+Enter still inserts a newline
+    submitOnEnter?: boolean;
+    // Called when Ctrl+Enter or Cmd+Enter is pressed (or Enter, with submitOnEnter)
     onSubmit?: () => void;
   },
 ) => {
   const {
     compact = false,
     autoGrow = false,
+    submitOnEnter = false,
     onSubmit,
     className,
     ...rest
@@ -30,9 +33,19 @@ export const Textarea = (
   }, [autoGrow, rest.value]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      e.preventDefault();
-      onSubmit?.();
+    if (e.key === "Enter") {
+      const modifierSubmit = e.ctrlKey || e.metaKey;
+      // Skip while an IME is composing so Enter can confirm the candidate.
+      const plainSubmit =
+        submitOnEnter &&
+        !e.shiftKey &&
+        !e.altKey &&
+        !e.nativeEvent.isComposing;
+
+      if (modifierSubmit || plainSubmit) {
+        e.preventDefault();
+        onSubmit?.();
+      }
     }
     rest.onKeyDown?.(e);
   };

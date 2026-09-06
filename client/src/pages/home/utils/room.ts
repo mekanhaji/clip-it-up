@@ -1,3 +1,5 @@
+import { ROUTES, withBase } from "@/lib/router";
+
 export const generateTempRoomCode = () => {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const token = Array.from({ length: 6 }, () => {
@@ -13,9 +15,9 @@ export const isServerRoomCode = (roomCode: string) => {
 
 export const ROOM_QUERY_PARAM = "room";
 
-/** Absolute, scannable invite URL for a room. */
+/** Absolute, scannable invite URL for a room. Always points at the home route. */
 export const buildRoomShareUrl = (code: string) => {
-  const url = new URL(window.location.pathname, window.location.origin);
+  const url = new URL(withBase(ROUTES.home), window.location.origin);
   url.searchParams.set(ROOM_QUERY_PARAM, code);
   return url.toString();
 };

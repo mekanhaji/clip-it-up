@@ -1,4 +1,5 @@
 import type { WireMessage } from "@/pages/home/types";
+import { sanitizeDeviceName } from "@/utils/deviceName";
 
 export type RoomSocket = WebSocket;
 
@@ -22,6 +23,19 @@ const resolveSocketUrl = (roomCode: string) => {
 };
 
 /**
+ * Bounds a sender name for the wire in both directions: names we send are
+ * kept tidy, and names we receive are untrusted so they get the same cap.
+ * Returns undefined when there is nothing usable.
+ */
+const normalizeSender = (value: unknown): string | undefined => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  const sender = sanitizeDeviceName(value).trim();
+  return sender || undefined;
+};
+
+/**
  * Creates and connects a WebSocket client to the specified room endpoint.
  * @param roomCode The code of the room to join.
  * @returns A connected RoomSocket instance.
@@ -33,12 +47,12 @@ export const createRoomSocket = (roomCode: string): RoomSocket => {
 /**
  * Subscribes to clipboard-related events from the server and invokes the provided callback when a message is received. Returns an unsubscribe function to clean up event listeners when no longer needed.
  * @param socket The RoomSocket instance to subscribe to.
- * @param onClipboardMessage Callback function to handle incoming clipboard messages.
+ * @param onClipboardMessage Callback receiving the clip content and, when the sender provided one, its device name.
  * @returns A function that can be called to unsubscribe from the events.
  */
 export const subscribeClipboardEvents = (
   socket: RoomSocket,
-  onClipboardMessage: (content: string) => void,
+  onClipboardMessage: (content: string, sender?: string) => void,
 ) => {
   const handleIncoming = (event: MessageEvent) => {
     try {
@@ -50,7 +64,7 @@ export const subscribeClipboardEvents = (
         return;
       }
 
-      onClipboardMessage(payload.content);
+      onClipboardMessage(payload.content, normalizeSender(payload.sender));
     } catch {
       // Ignore malformed messages.
     }
@@ -67,6 +81,7 @@ export const emitClipboardMessage = (
   socket: RoomSocket,
   roomCode: string,
   content: string,
+  sender?: string,
 ) => {
   const value = content.trim();
   if (!value) {
@@ -78,6 +93,11 @@ export const emitClipboardMessage = (
     room: roomCode,
     content: value,
   };
+
+  const senderName = normalizeSender(sender);
+  if (senderName) {
+    payload.sender = senderName;
+  }
 
   if (socket.readyState !== WebSocket.OPEN) {
     return;

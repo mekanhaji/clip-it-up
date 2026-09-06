@@ -35,6 +35,8 @@ type Message struct {
 	Type    string `json:"type"`
 	Content string `json:"content"`
 	Room    string `json:"room"`
+	// Sender is the optional device name of the sending client; older clients omit it.
+	Sender string `json:"sender,omitempty"`
 }
 
 // In-memory storage for rooms (in production, use a database)
