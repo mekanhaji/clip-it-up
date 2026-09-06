@@ -45,10 +45,10 @@ export const ActionRow = ({
               variant === "ghost"
                 ? compact
                   ? "h-8 px-2 text-[11px]"
-                  : "h-9 px-3 text-xs"
+                  : "h-10 px-3 text-xs sm:h-9"
                 : compact
                   ? "h-8 min-w-[86px] px-3 text-[11px]"
-                  : "h-9 min-w-[96px] px-5 text-xs",
+                  : "h-10 min-w-[96px] px-5 text-xs sm:h-9",
               variantClasses[variant],
             )}
           >

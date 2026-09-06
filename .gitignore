@@ -119,3 +119,6 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+
+# Go vendored dependencies
+vendor/

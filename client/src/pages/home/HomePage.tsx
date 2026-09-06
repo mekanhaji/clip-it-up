@@ -7,7 +7,7 @@ import type { ActionDefinition } from "@/pages/home/types";
 import { useClipboardStore } from "@/store/clipboard";
 import { useRoomStore, useSocketStore } from "@/store/room";
 import { useEffect, useMemo, useState } from "react";
-import { subscribeClipboardEvents } from "./api/ws";
+import { emitClipboardMessage, subscribeClipboardEvents } from "./api/ws";
 
 const HomePage = () => {
   const { toast } = useToast();
@@ -17,14 +17,24 @@ const HomePage = () => {
   const { code, leaveRoom } = useRoomStore();
 
   const hasClipboardContent = entries.length > 0;
+  const hasComposerText = composerValue.trim().length > 0;
 
-  const pinInputToBoard = () => {
+  const sendClip = () => {
+    const content = composerValue.trim();
+
+    if (!content) {
+      return;
+    }
+
     addEntry({
       id: crypto.randomUUID(),
-      content: composerValue.trim(),
+      content,
       source: "local",
       createdAt: Date.now(),
     });
+    if (socket && code) {
+      emitClipboardMessage(socket, code, content);
+    }
     setComposerValue("");
   };
 
@@ -68,11 +78,11 @@ const HomePage = () => {
     () => [
       {
         key: "sync",
-        label: composerValue.trim().length > 0 ? "pin" : "sync",
+        label: hasComposerText ? "send" : "sync",
         variant: "primary",
         onClick: () => {
-          if (composerValue.trim().length > 0) {
-            pinInputToBoard();
+          if (hasComposerText) {
+            sendClip();
             return;
           }
           syncClipboard();
@@ -105,8 +115,8 @@ const HomePage = () => {
       },
     ],
     [
-      composerValue,
-      pinInputToBoard,
+      hasComposerText,
+      sendClip,
       syncClipboard,
       clearEntries,
       leaveRoom,
@@ -138,10 +148,11 @@ const HomePage = () => {
             <Composer
               value={composerValue}
               onChange={setComposerValue}
-              className="mx-auto mt-14 max-w-xl"
+              onSubmit={sendClip}
+              className="mx-auto mt-10 max-w-xl sm:mt-14"
             />
 
-            <ActionRow actions={actions} className="mt-8" />
+            <ActionRow actions={actions} className="mt-6 sm:mt-8" />
           </div>
         </section>
       </main>
