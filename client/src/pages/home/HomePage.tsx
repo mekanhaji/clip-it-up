@@ -4,10 +4,12 @@ import { ClipboardCanvas } from "@/pages/home/components/ClipboardCanvas";
 import { Composer } from "@/pages/home/components/Composer";
 import { TopBar } from "@/pages/home/components/TopBar";
 import type { ActionDefinition } from "@/pages/home/types";
+import { createId } from "@/utils/clipboard";
 import { useClipboardStore } from "@/store/clipboard";
 import { useRoomStore, useSocketStore } from "@/store/room";
 import { useEffect, useMemo, useState } from "react";
 import { emitClipboardMessage, subscribeClipboardEvents } from "./api/ws";
+import { useRoomUrlSync } from "./hooks/useRoomUrlSync";
 
 const HomePage = () => {
   const { toast } = useToast();
@@ -15,6 +17,8 @@ const HomePage = () => {
   const { entries, addEntry, clearEntries } = useClipboardStore();
   const { socket } = useSocketStore();
   const { code, leaveRoom } = useRoomStore();
+
+  useRoomUrlSync();
 
   const hasClipboardContent = entries.length > 0;
   const hasComposerText = composerValue.trim().length > 0;
@@ -27,7 +31,7 @@ const HomePage = () => {
     }
 
     addEntry({
-      id: crypto.randomUUID(),
+      id: createId(),
       content,
       source: "local",
       createdAt: Date.now(),
@@ -49,7 +53,7 @@ const HomePage = () => {
       }
 
       addEntry({
-        id: crypto.randomUUID(),
+        id: createId(),
         content: text.trim(),
         source: "local",
         createdAt: Date.now(),
@@ -64,7 +68,7 @@ const HomePage = () => {
 
     const unsubscribe = subscribeClipboardEvents(socket, (content) => {
       addEntry({
-        id: crypto.randomUUID(),
+        id: createId(),
         content,
         source: "remote",
         createdAt: Date.now(),
