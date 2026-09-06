@@ -16,6 +16,10 @@ export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
   const { setSocket } = useSocketStore();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [roomCode, setRoomCode] = useState("");
+
+  const trimmedCode = roomCode.trim();
+  const hasRoomCode = trimmedCode.length > 0;
 
   const _preCall = (roomCode: string | null) => {
     setIsPending(true);
@@ -39,33 +43,34 @@ export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
     });
     updateRoomCode(roomCode);
     setIsPending(false);
+    setRoomCode("");
     onClose();
   };
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.currentTarget);
-    const newCode = formData.get("code")?.toString().trim().toUpperCase();
-
-    if (!newCode) {
+  const handleJoinRoom = () => {
+    if (!trimmedCode) {
       setError("Room code is required");
       setIsPending(false);
       return;
     }
 
-    if (newCode.length !== 6) {
+    if (trimmedCode.length !== 6) {
       setError("Room code can only be 6 characters long");
       setIsPending(false);
       return;
     }
 
-    _preCall(newCode);
+    _preCall(trimmedCode);
 
-    const socket = createRoomSocket(newCode);
+    const socket = createRoomSocket(trimmedCode);
     setSocket(socket);
 
-    _postCall(newCode);
+    _postCall(trimmedCode);
+  };
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleJoinRoom();
   };
 
   const handleCreateRoom = async () => {
@@ -123,34 +128,33 @@ export const RoomConfigModal = ({ open, onClose }: RoomConfigModalProps) => {
               <input
                 type="text"
                 name="code"
+                value={roomCode}
+                onChange={(event) =>
+                  setRoomCode(event.target.value.toUpperCase())
+                }
                 placeholder="room code"
                 className="font-mono-ui w-full rounded border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-center text-lg tracking-[0.18em] focus:border-[var(--foreground)] focus:outline-none uppercase"
               />
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full rounded border border-[var(--border)] px-3 py-2.5 font-mono-ui text-xs tracking-[0.08em] transition-colors hover:bg-[var(--secondary)] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Join room
-              </button>
             </form>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-[var(--border)]" />
-            <span className="font-mono-ui text-[10px] uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
-              or
-            </span>
-            <div className="h-px flex-1 bg-[var(--border)]" />
-          </div>
+          {!hasRoomCode && (
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-[var(--border)]" />
+              <span className="font-mono-ui text-[10px] uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
+                or
+              </span>
+              <div className="h-px flex-1 bg-[var(--border)]" />
+            </div>
+          )}
 
           <button
             type="button"
-            onClick={handleCreateRoom}
+            onClick={hasRoomCode ? handleJoinRoom : handleCreateRoom}
             disabled={isPending}
             className="w-full rounded border border-[var(--foreground)] bg-[var(--foreground)] px-3 py-2.5 font-mono-ui text-xs tracking-[0.08em] text-[var(--background)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Create new room
+            {hasRoomCode ? "Join room" : "Create new room"}
           </button>
 
           {error && (
