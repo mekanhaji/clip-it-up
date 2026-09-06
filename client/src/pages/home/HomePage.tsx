@@ -4,51 +4,77 @@ import { ClipboardCanvas } from "@/pages/home/components/ClipboardCanvas";
 import { Composer } from "@/pages/home/components/Composer";
 import { TopBar } from "@/pages/home/components/TopBar";
 import type { ActionDefinition } from "@/pages/home/types";
+import { createId } from "@/utils/clipboard";
 import { useClipboardStore } from "@/store/clipboard";
 import { useRoomStore, useSocketStore } from "@/store/room";
-import { useEffect, useMemo, useState } from "react";
-import { subscribeClipboardEvents } from "./api/ws";
+import { useSettingsStore } from "@/store/settings";
+import { useCallback, useMemo, useState } from "react";
+import { emitClipboardMessage } from "./api/ws";
 
+// Incoming clips and URL <-> room syncing live in App so they keep working
+// while the settings page is open.
 const HomePage = () => {
   const { toast } = useToast();
   const [composerValue, setComposerValue] = useState("");
   const { entries, addEntry, clearEntries } = useClipboardStore();
   const { socket } = useSocketStore();
   const { code, leaveRoom } = useRoomStore();
+  const deviceName = useSettingsStore((state) => state.deviceName);
+  const clearOnLeave = useSettingsStore((state) => state.clearOnLeave);
 
   const hasClipboardContent = entries.length > 0;
-  useEffect(() => {
-    if (!socket) {
+  const hasComposerText = composerValue.trim().length > 0;
+
+  const sendClip = useCallback(() => {
+    const content = composerValue.trim();
+
+    if (!content) {
       return;
     }
 
-    const unsubscribe = subscribeClipboardEvents(socket, (content) => {
+    addEntry({
+      id: createId(),
+      content,
+      source: "local",
+      createdAt: Date.now(),
+    });
+    if (socket && code) {
+      emitClipboardMessage(socket, code, content, deviceName);
+    }
+    setComposerValue("");
+  }, [composerValue, addEntry, socket, code, deviceName]);
+
+  const syncClipboard = useCallback(() => {
+    navigator.clipboard.readText().then((text) => {
+      if (text.trim().length === 0) {
+        toast({
+          title: "Clipboard is empty",
+          description: "Please copy something to your clipboard first.",
+        });
+        return;
+      }
+
       addEntry({
-        id: crypto.randomUUID(),
-        content,
-        source: "remote",
+        id: createId(),
+        content: text.trim(),
+        source: "local",
         createdAt: Date.now(),
       });
     });
-
-    return unsubscribe;
-  }, [socket, addEntry]);
+  }, [addEntry, toast]);
 
   const actions: ActionDefinition[] = useMemo(
     () => [
       {
         key: "sync",
-        label: "sync",
+        label: hasComposerText ? "send" : "sync",
         variant: "primary",
         onClick: () => {
-          if (!composerValue.trim()) {
-            addEntry({
-              id: crypto.randomUUID(),
-              content: composerValue.trim(),
-              source: "local",
-              createdAt: Date.now(),
-            });
+          if (hasComposerText) {
+            sendClip();
+            return;
           }
+          syncClipboard();
         },
       },
       {
@@ -58,9 +84,14 @@ const HomePage = () => {
         onClick: () => {
           socket?.close();
           leaveRoom();
+          if (clearOnLeave) {
+            clearEntries();
+          }
           toast({
             title: "Left room",
-            description: `You have left room ${code}.`,
+            description: clearOnLeave
+              ? `You have left room ${code} and the board was cleared.`
+              : `You have left room ${code}.`,
           });
         },
       },
@@ -77,7 +108,17 @@ const HomePage = () => {
         },
       },
     ],
-    [toast, composerValue, addEntry, clearEntries, leaveRoom, code, socket],
+    [
+      hasComposerText,
+      sendClip,
+      syncClipboard,
+      clearEntries,
+      clearOnLeave,
+      leaveRoom,
+      code,
+      socket,
+      toast,
+    ],
   );
 
   return (
@@ -103,10 +144,11 @@ const HomePage = () => {
             <Composer
               value={composerValue}
               onChange={setComposerValue}
-              className="mx-auto mt-14 max-w-xl"
+              onSubmit={sendClip}
+              className="mx-auto mt-10 max-w-xl sm:mt-14"
             />
 
-            <ActionRow actions={actions} className="mt-8" />
+            <ActionRow actions={actions} className="mt-6 sm:mt-8" />
           </div>
         </section>
       </main>

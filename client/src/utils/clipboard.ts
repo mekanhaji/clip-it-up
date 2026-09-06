@@ -1,3 +1,8 @@
+export const createId = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
 export const generateHash = (text: string): string => {
   let hash = 0;
   for (let i = 0; i < text.length; i++) {

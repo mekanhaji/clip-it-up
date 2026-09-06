@@ -1,6 +1,8 @@
 import type { ClipboardEntry } from "@/pages/home/types";
 import { toast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 import { useClipboardStore } from "@/store/clipboard";
+import { useSettingsStore } from "@/store/settings";
 import { Copy, Pin, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -10,18 +12,29 @@ interface ClipboardCanvasProps {
 
 interface ClipCanvasItemProps {
   entry: ClipboardEntry;
+  compact: boolean;
+  use24HourClock: boolean;
   onCopy: (entry: ClipboardEntry) => void;
   onDelete: (entry: ClipboardEntry) => void;
   onPin: (entry: ClipboardEntry) => void;
 }
 
+const describeSource = (entry: ClipboardEntry) => {
+  if (entry.source === "local") {
+    return "text/local";
+  }
+  return entry.sender ? `from ${entry.sender}` : "text/remote";
+};
+
 const ClipCanvas = ({
   entry,
+  compact,
+  use24HourClock,
   onCopy,
   onDelete,
   onPin,
 }: ClipCanvasItemProps) => {
-  const sourceLabel = entry.source === "local" ? "text/local" : "text/remote";
+  const sourceLabel = describeSource(entry);
   const isLongEntry = entry.content.length > 180;
   const widthClass = isLongEntry
     ? "md:flex-[2_1_32rem]"
@@ -30,19 +43,26 @@ const ClipCanvas = ({
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    hour12: false,
+    hour12: !use24HourClock,
   });
 
   return (
     <article
-      className={`group h-fit min-w-[16rem] flex-[1_1_16rem] ${widthClass} rounded border border-[color:color-mix(in_srgb,var(--muted-foreground)_15%,transparent)] bg-[var(--background)] p-[1.4rem] transition-colors hover:bg-[var(--secondary)]/60`}
+      className={cn(
+        "group h-fit min-w-[16rem] flex-[1_1_16rem] rounded border border-[color:color-mix(in_srgb,var(--muted-foreground)_15%,transparent)] bg-[var(--background)] transition-colors hover:bg-[var(--secondary)]/60",
+        widthClass,
+        compact ? "p-4" : "p-[1.4rem]",
+      )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex gap-2">
-          <span className="font-mono-ui rounded-full bg-[var(--secondary)] px-2 py-0.5 text-[10px] lowercase tracking-[0.04em] text-[var(--muted-foreground)]">
+        <div className="flex min-w-0 gap-2">
+          <span
+            className="font-mono-ui max-w-[12rem] truncate rounded-full bg-[var(--secondary)] px-2 py-0.5 text-[10px] lowercase tracking-[0.04em] text-[var(--muted-foreground)]"
+            title={entry.sender}
+          >
             {sourceLabel}
           </span>
-          <span className="font-mono-ui rounded-full bg-[var(--secondary)] px-2 py-0.5 text-[10px] lowercase tracking-[0.04em] text-[var(--muted-foreground)]">
+          <span className="font-mono-ui shrink-0 rounded-full bg-[var(--secondary)] px-2 py-0.5 text-[10px] lowercase tracking-[0.04em] text-[var(--muted-foreground)]">
             {timestamp}
           </span>
         </div>
@@ -78,7 +98,12 @@ const ClipCanvas = ({
         </div>
       </div>
 
-      <p className="font-mono-ui mt-4 text-sm leading-[1.6] lowercase text-[var(--foreground)] whitespace-pre-wrap break-words">
+      <p
+        className={cn(
+          "font-mono-ui leading-[1.6] lowercase text-[var(--foreground)] whitespace-pre-wrap break-words",
+          compact ? "mt-3 text-xs" : "mt-4 text-sm",
+        )}
+      >
         {entry.content}
       </p>
     </article>
@@ -87,6 +112,9 @@ const ClipCanvas = ({
 
 export const ClipboardCanvas = ({ entries }: ClipboardCanvasProps) => {
   const { removeEntry, togglePinned } = useClipboardStore();
+  const density = useSettingsStore((state) => state.density);
+  const use24HourClock = useSettingsStore((state) => state.use24HourClock);
+  const compact = density === "compact";
 
   const orderedEntries = useMemo(
     () =>
@@ -143,11 +171,18 @@ export const ClipboardCanvas = ({ entries }: ClipboardCanvasProps) => {
   return (
     <section className="mx-auto w-full max-w-4xl px-6 pb-4 pt-28 sm:px-8">
       <div className="max-h-[calc(100vh-22rem)] overflow-y-auto overscroll-contain pr-1">
-        <div className="flex flex-wrap items-start gap-4 md:gap-6">
+        <div
+          className={cn(
+            "flex flex-wrap items-start",
+            compact ? "gap-3" : "gap-4 md:gap-6",
+          )}
+        >
           {orderedEntries.map((entry) => (
             <ClipCanvas
               key={entry.id}
               entry={entry}
+              compact={compact}
+              use24HourClock={use24HourClock}
               onCopy={handleCopy}
               onDelete={handleDelete}
               onPin={handlePin}

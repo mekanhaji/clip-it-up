@@ -1,9 +1,10 @@
-import { toast } from "@/components/ui/use-toast";
+import { navigate } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { useRoomStore } from "@/store/room";
 import { Settings2, Share2 } from "lucide-react";
 import { useState } from "react";
 import { RoomConfigModal } from "./RoomConfigModal";
+import { ShareRoomModal } from "./ShareRoomModal";
 
 const RoomStatusButton = () => {
   const [openRoomConfig, setOpenRoomConfig] = useState(false);
@@ -41,15 +42,8 @@ const RoomStatusButton = () => {
 
 export const TopBar = () => {
   const { code } = useRoomStore();
-  // copies room code to clipboard and shows a toast notification
-  const handleShare = () => {
-    navigator.clipboard.writeText(code || "").then(() => {
-      toast({
-        title: "Room code copied to clipboard",
-        description: `Share this code with others to join the room: ${code}`,
-      });
-    });
-  };
+  const [openShareRoom, setOpenShareRoom] = useState(false);
+
   return (
     <header className="fixed left-0 top-0 z-30 flex w-full items-center justify-between px-6 py-4 sm:px-7">
       <div className="flex items-center gap-3 sm:gap-4">
@@ -62,21 +56,28 @@ export const TopBar = () => {
       <div className="flex items-center gap-1.5 sm:gap-2">
         <button
           type="button"
-          onClick={handleShare}
+          onClick={() => setOpenShareRoom(true)}
           disabled={!code}
-          className="rounded p-2 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--secondary)]"
+          className="rounded p-2 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--secondary)] disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Share room"
         >
           <Share2 className="h-[15px] w-[15px]" />
         </button>
         <button
           type="button"
+          onClick={() => navigate("settings")}
           className="rounded p-2 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--secondary)]"
-          aria-label="Room settings"
+          aria-label="Settings"
+          title="settings"
         >
           <Settings2 className="h-[15px] w-[15px]" />
         </button>
       </div>
+
+      <ShareRoomModal
+        open={openShareRoom}
+        onClose={() => setOpenShareRoom(false)}
+      />
     </header>
   );
 };
